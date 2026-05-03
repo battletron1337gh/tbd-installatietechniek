@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   CheckCircle,
   Zap,
-  Loader2
+  Loader2,
+  Briefcase
 } from "lucide-react";
 
 const steps = [
@@ -24,13 +25,13 @@ const steps = [
 ];
 
 const serviceTypes = [
-  "Laadpaal installeren",
+  "Laadpaal installatie",
   "Groepenkast vervangen/uitbreiden",
-  "Zonnepanelen installeren",
-  "Thuisbatterij installeren",
-  "Storing verhelpen",
   "Extra groepen aanleggen",
-  "Anders",
+  "Zonnepanelen installatie",
+  "Thuisbatterij installatie",
+  "Elektrische storing oplossen",
+  "Anders (toelichting)",
 ];
 
 export default function QuoteForm() {
@@ -43,11 +44,14 @@ export default function QuoteForm() {
     phone: "",
     address: "",
     serviceType: "",
+    serviceOther: "",
     description: "",
     files: [] as File[],
     honeypot: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isOtherService = formData.serviceType === "Anders (toelichting)";
 
   const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
@@ -66,6 +70,9 @@ export default function QuoteForm() {
 
     if (step === 2) {
       if (!formData.serviceType) newErrors.serviceType = "Selecteer een dienst";
+      if (isOtherService && !formData.serviceOther.trim()) {
+        newErrors.serviceOther = "Geef een toelichting op de dienst";
+      }
       if (!formData.description.trim()) newErrors.description = "Beschrijving is verplicht";
     }
 
@@ -89,7 +96,7 @@ export default function QuoteForm() {
     
     setIsSubmitting(true);
     
-    // Simulate API call
+    // Simulate API call - in production this would send email with service type
     await new Promise((resolve) => setTimeout(resolve, 2000));
     
     setIsSubmitting(false);
@@ -103,6 +110,13 @@ export default function QuoteForm() {
         files: [...prev.files, ...Array.from(e.target.files!)],
       }));
     }
+  };
+
+  const getServiceDisplay = () => {
+    if (isOtherService && formData.serviceOther) {
+      return `Anders: ${formData.serviceOther}`;
+    }
+    return formData.serviceType;
   };
 
   if (isSuccess) {
@@ -305,28 +319,66 @@ export default function QuoteForm() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Type dienst *
+                  Dienst *
                 </label>
-                <select
-                  value={formData.serviceType}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, serviceType: e.target.value }))
-                  }
-                  className={`w-full px-4 py-3 rounded-xl border ${
-                    errors.serviceType ? "border-red-500" : "border-gray-200"
-                  } focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/20 outline-none transition-all bg-white`}
-                >
-                  <option value="">Selecteer een dienst</option>
-                  {serviceTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <select
+                    value={formData.serviceType}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ 
+                        ...prev, 
+                        serviceType: e.target.value,
+                        serviceOther: "" // Reset other field when changing
+                      }))
+                    }
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                      errors.serviceType ? "border-red-500" : "border-gray-200"
+                    } focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/20 outline-none transition-all bg-white appearance-none`}
+                  >
+                    <option value="">Selecteer een dienst</option>
+                    {serviceTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 rotate-90 pointer-events-none" />
+                </div>
                 {errors.serviceType && (
                   <p className="text-red-500 text-sm mt-1">{errors.serviceType}</p>
                 )}
               </div>
+
+              {/* Conditional field for "Anders" */}
+              <AnimatePresence>
+                {isOtherService && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Toelichting dienst *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.serviceOther}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, serviceOther: e.target.value }))
+                      }
+                      className={`w-full px-4 py-3 rounded-xl border ${
+                        errors.serviceOther ? "border-red-500" : "border-gray-200"
+                      } focus:border-[#1e3a5f] focus:ring-2 focus:ring-[#1e3a5f]/20 outline-none transition-all`}
+                      placeholder="Beschrijf welke dienst u nodig heeft..."
+                    />
+                    {errors.serviceOther && (
+                      <p className="text-red-500 text-sm mt-1">{errors.serviceOther}</p>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -450,8 +502,8 @@ export default function QuoteForm() {
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500">Dienst</p>
-                  <p className="font-medium">{formData.serviceType}</p>
+                  <p className="text-sm text-gray-500">Gevraagde dienst</p>
+                  <p className="font-medium">{getServiceDisplay()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Beschrijving</p>
@@ -463,6 +515,12 @@ export default function QuoteForm() {
                     <p className="font-medium">{formData.files.length} foto&apos;s</p>
                   </div>
                 )}
+              </div>
+
+              <div className="bg-[#f4c430]/10 rounded-xl p-4 border border-[#f4c430]/20">
+                <p className="text-sm text-[#1e3a5f]">
+                  <strong>Tip:</strong> De geselecteerde dienst &quot;{getServiceDisplay()}&quot; wordt meegestuurd in de e-mail naar de eigenaar voor een snellere afhandeling.
+                </p>
               </div>
 
               <p className="text-sm text-gray-500">
