@@ -33,19 +33,14 @@ export default function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <Link href="/" className="flex items-center gap-3 mb-6">
-              <div className="relative w-14 h-14 bg-white rounded-lg p-1">
-                <Image
-                  src="/logo.png"
-                  alt="TBD Installatietechniek"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              <div>
-                <p className="font-bold text-lg leading-tight">TBD</p>
-                <p className="text-xs text-gray-400">Installatietechniek</p>
-              </div>
+            <Link href="/" className="block mb-6">
+              <Image
+                src="/logo-new.jpg"
+                alt="TBD Installatietechniek"
+                width={280}
+                height={84}
+                className="object-contain w-auto h-20"
+              />
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Elektrotechniek zonder gedoe in Cuijk en omgeving. 

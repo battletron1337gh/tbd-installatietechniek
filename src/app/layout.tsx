@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description: "Elektrotechniek zonder gedoe in Cuijk en omgeving. Laadpalen, groepenkasten, zonnepanelen en meer.",
     type: "website",
   },
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
